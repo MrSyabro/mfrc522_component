@@ -17,13 +17,14 @@
 
 static const char *TAG = "test_main";
 
-// RC522
-uint8_t		uid[MFRC522_MAX_LEN];
+uint8_t uid[MFRC522_MAX_LEN]; // Для хранения ID карт
 
 void main_test_task(void *pvParameter)
 {
-    MFRC522_Init();
+    // Инициализируем RC522
+	MFRC522_Init();
 	
+	// Считываем версия прошивки чипа и проверяем соединение
 	uint32_t ver = MFRC522_ReadRegister(MFRC522_REG_VERSION);
 	ESP_LOGI(TAG, "RC522 version: 0x%0x", ver);
 	switch(ver) {
@@ -35,15 +36,15 @@ void main_test_task(void *pvParameter)
 		default:   ESP_LOGI(TAG, "Chip not found"); vTaskDelete(NULL);
 	}
 	
-	
+	// Ципл проверки карты и вывода ID, если карта считана
 	uint8_t status;
 	while (1){
-		status = MFRC522_Check(&uid);
+		status = MFRC522_Check(&uid); // Проверяем карту
 		
 		if (status == MI_OK){
 			ESP_LOGI(TAG, "MF return: ");
 			for (uint8_t i = 0; uid[i]; i++)
-				printf ("0x%0x ", uid[i]);
+				printf ("0x%0x ", uid[i]); // Выводим считаный ID
 			printf("\n");
 		}
 		
