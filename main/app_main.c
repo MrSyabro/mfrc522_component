@@ -18,8 +18,7 @@
 static const char *TAG = "test_main";
 
 // RC522
-uint8_t		str[MFRC522_MAX_LEN];												// MFRC522_MAX_LEN = 16
-uint8_t		test[4];
+uint8_t		uid[MFRC522_MAX_LEN];
 
 void main_test_task(void *pvParameter)
 {
@@ -28,23 +27,30 @@ void main_test_task(void *pvParameter)
 	uint32_t ver = MFRC522_ReadRegister(MFRC522_REG_VERSION);
 	ESP_LOGI(TAG, "RC522 version: 0x%0x", ver);
 	switch(ver) {
-		case 0x88: ESP_LOGI(TAG, "clone");  break;
-		case 0x90: ESP_LOGI(TAG, " = v0.0");     break;
-		case 0x91: ESP_LOGI(TAG, " = v1.0");     break;
-		case 0x92: ESP_LOGI(TAG, " = v2.0");     break;
-		case 0x12: ESP_LOGI(TAG, " = counterfeit chip");     break;
-		default:   ESP_LOGI(TAG, " = (unknown)");
+		case 0x88: ESP_LOGI(TAG, "clone"); break;
+		case 0x90: ESP_LOGI(TAG, "v0.0"); break;
+		case 0x91: ESP_LOGI(TAG, "v1.0"); break;
+		case 0x92: ESP_LOGI(TAG, "v2.0"); break;
+		case 0x12: ESP_LOGI(TAG, "counterfeit chip"); break;
+		default:   ESP_LOGI(TAG, "Chip not found"); vTaskDelete(NULL);
 	}
 	
 	
-	//uint8_t i, j, q;
+	uint8_t status;
 	while (1){
-		vTaskDelay(1000 / portTICK_RATE_MS);
-		MFRC522_Check(&str);
-		ESP_LOGI(TAG, "MF return: ");
-		for (uint8_t i = 0; str[i]; i++)
-			printf ("0x%0x ", str[i]);
+		status = MFRC522_Check(&uid);
+		
+		if (status == MI_OK){
+			ESP_LOGI(TAG, "MF return: ");
+			for (uint8_t i = 0; uid[i]; i++)
+				printf ("0x%0x ", uid[i]);
+			printf("\n");
+		}
+		
+		vTaskDelay(100 / portTICK_RATE_MS);
 	}
+	
+	vTaskDelete(NULL);
 }
 
 void app_main()
