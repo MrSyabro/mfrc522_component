@@ -17,8 +17,6 @@
 
 static const char *TAG = "test_main";
 
-uint8_t uid[MFRC522_MAX_LEN]; // Для хранения ID карт
-
 void main_test_task(void *pvParameter)
 {
     // Инициализируем RC522
@@ -37,17 +35,40 @@ void main_test_task(void *pvParameter)
 	}
 	
 	// Ципл проверки карты и вывода ID, если карта считана
+	uint8_t last_uid[5] = {0, 0, 0, 0, 0}; // Для хранения ID карт
+	uint8_t card_data[MFRC522_MAX_LEN]; // Для считывания данных карты
 	uint8_t status;
+	uint8_t uid[5];
+	uint8_t size;
 	while (1){
-		status = MFRC522_Check(&uid); // Проверяем карту
+		status = MFRC522_Check(uid); // Проверяем карту
 		
-		if (status == MI_OK){
+		if (status == MI_OK && MFRC522_Compare (uid, last_uid) == MI_ERR) {
 			ESP_LOGI(TAG, "MF return: ");
 			for (uint8_t i = 0; uid[i]; i++)
 				printf ("0x%0x ", uid[i]); // Выводим считаный ID
 			printf("\n");
+
+			size = MFRC522_SelectTag (uid);
+			ESP_LOGI(TAG, "Size = 0x%0x", size);
+
+			for (uint8_t bln = 0; bln < 64; bln++)
+			{
+				MFRC522_Read (bln, card_data);
+				printf("Block %d: ", bln);
+				for (uint8_t i = 0; i < MFRC522_MAX_LEN; i++)
+				{
+
+					printf ("0x%0x ", card_data[i]);
+				}
+			  	printf("\n");
+			}
+
+
+			memcpy((uint8_t *)last_uid, (uint8_t *)uid, 5);
 		}
 		
+
 		vTaskDelay(100 / portTICK_RATE_MS);
 	}
 	
