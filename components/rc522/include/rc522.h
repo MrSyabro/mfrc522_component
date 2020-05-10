@@ -113,8 +113,6 @@
 
 #define MFRC522_DUMMY					0x00			// Dummy byte
 #define MFRC522_MAX_LEN					16				// Buf len byte
-#define MFRC522_CS_PIN					15
-#define MFRC522_CS_PIN_SEL				(1ULL<<MFRC522_CS_PIN)
 
 uint8_t MFRC522_Check(uint8_t * id);
 uint8_t MFRC522_Compare(uint8_t * CardID, uint8_t * CompareID);

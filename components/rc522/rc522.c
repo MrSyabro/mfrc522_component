@@ -25,23 +25,19 @@ void MFRC522_Init(void) {
     spi_config.event_cb = NULL;
     spi_init(HSPI_HOST, &spi_config);
 	
-	//gpio_set_level(MFRC522_CS_PIN, 1);
-	
 	ESP_LOGI(TAG, "Init rc522");
 	MFRC522_Reset();
 	MFRC522_WriteRegister(MFRC522_REG_T_MODE, 0x80);
-	/* MFRC522_WriteRegister(MFRC522_REG_T_PRESCALER, 0x3E); */
-	/* MFRC522_WriteRegister(MFRC522_REG_T_RELOAD_L, 30);            */
-	/* MFRC522_WriteRegister(MFRC522_REG_T_RELOAD_H, 0); */
-	MFRC522_WriteRegister(MFRC522_REG_T_PRESCALER, 0xA9);
-	MFRC522_WriteRegister(MFRC522_REG_T_RELOAD_L, 0xE8);           
-	MFRC522_WriteRegister(MFRC522_REG_T_RELOAD_H, 0x03);
-	//MFRC522_WriteRegister(MFRC522_REG_RF_CFG, 0x70);			// 48dB gain	
+	MFRC522_WriteRegister(MFRC522_REG_T_PRESCALER, 0x3E);
+	MFRC522_WriteRegister(MFRC522_REG_T_RELOAD_L, 30);
+	MFRC522_WriteRegister(MFRC522_REG_T_RELOAD_H, 0);
+	/* MFRC522_WriteRegister(MFRC522_REG_T_PRESCALER, 0xA9); */
+	/* MFRC522_WriteRegister(MFRC522_REG_T_RELOAD_L, 0xE8);            */
+	/* MFRC522_WriteRegister(MFRC522_REG_T_RELOAD_H, 0x03); */
+	MFRC522_WriteRegister(MFRC522_REG_RF_CFG, 0x70);			// 48dB gain
 	MFRC522_WriteRegister(MFRC522_REG_TX_AUTO, 0x40);
 	MFRC522_WriteRegister(MFRC522_REG_MODE, 0x3D);
 	MFRC522_AntennaOn();										// Open the antenna
-	MFRC522_AntennaOn();
-	MFRC522_AntennaOn();
 }
 
 uint8_t MFRC522_Check(uint8_t * id) {
