@@ -35,44 +35,44 @@ void main_test_task(void *pvParameter)
 	}
 	
 	// Ципл проверки карты и вывода ID, если карта считана
-	uint8_t last_uid[5] = {0, 0, 0, 0, 0}; // Для хранения ID карт
-	uint8_t card_data[MFRC522_MAX_LEN]; // Для считывания данных карты
+	uint8_t * last_uid = calloc (5, sizeof(uint8_t)); // Для хранения ID карт
+	//uint8_t * card_data = calloc (MFRC522_MAX_LEN, sizeof(uint8_t)); // Для считывания данных карты
 	uint8_t status;
-	uint8_t uid[5];
+	uint8_t * uid = calloc (5, sizeof(uint8_t));
 	uint8_t size;
-	while (1){
-		status = MFRC522_Check(uid); // Проверяем карту
+	while (1)
+	{
+		status = MFRC522_Check (uid); // Проверяем карту
 		
 		if (status == MI_OK && MFRC522_Compare (uid, last_uid) == MI_ERR) {
-			ESP_LOGI(TAG, "MF return: ");
-			for (uint8_t i = 0; uid[i]; i++)
-				printf ("0x%0x ", uid[i]); // Выводим считаный ID
-			printf("\n");
+			ESP_LOGI (TAG, "MF return: %0x %0x %0x %0x", uid[0], uid[1], uid[2], uid[3]);
 
 			size = MFRC522_SelectTag (uid);
-			ESP_LOGI(TAG, "Size = 0x%0x", size);
+			ESP_LOGI (TAG, "Size = %dk", size);
 
-			for (uint8_t bln = 0; bln < 64; bln++)
-			{
-				MFRC522_Read (bln, card_data);
-				printf("Block %d: ", bln);
-				for (uint8_t i = 0; i < MFRC522_MAX_LEN; i++)
-				{
+			/* for (uint8_t bln = 0; bln < 64; bln++) */
+			/* { */
+			/* 	status = MFRC522_Read (bln, card_data); */
+			/* 	if (status == MI_OK) { */
+			/* 		printf ("Block %d: ", bln); */
+			/* 		for (uint8_t i = 0; i < MFRC522_MAX_LEN; i++) */
+			/* 		{ */
 
-					printf ("0x%0x ", card_data[i]);
-				}
-			  	printf("\n");
-			}
+			/* 			printf ("0x%0x ", card_data[i]); */
+			/* 		} */
+			/* 	  	printf ("\n"); */
+			/* 	}else{ ESP_LOGI (TAG, "Read error."); break; } */
+			/* } */
+			MFRC522_Halt();
 
-
-			memcpy((uint8_t *)last_uid, (uint8_t *)uid, 5);
+			memcpy ( (uint8_t *) last_uid, (uint8_t *) uid, 5);
 		}
 		
 
-		vTaskDelay(100 / portTICK_RATE_MS);
+		vTaskDelay (100 / portTICK_RATE_MS);
 	}
 	
-	vTaskDelete(NULL);
+	vTaskDelete (NULL);
 }
 
 void app_main()

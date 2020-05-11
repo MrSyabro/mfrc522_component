@@ -28,13 +28,13 @@ void MFRC522_Init(void) {
 	ESP_LOGI(TAG, "Init rc522");
 	MFRC522_Reset();
 	MFRC522_WriteRegister(MFRC522_REG_T_MODE, 0x80);
-	MFRC522_WriteRegister(MFRC522_REG_T_PRESCALER, 0x3E);
-	MFRC522_WriteRegister(MFRC522_REG_T_RELOAD_L, 30);
-	MFRC522_WriteRegister(MFRC522_REG_T_RELOAD_H, 0);
-	/* MFRC522_WriteRegister(MFRC522_REG_T_PRESCALER, 0xA9); */
-	/* MFRC522_WriteRegister(MFRC522_REG_T_RELOAD_L, 0xE8);            */
-	/* MFRC522_WriteRegister(MFRC522_REG_T_RELOAD_H, 0x03); */
-	MFRC522_WriteRegister(MFRC522_REG_RF_CFG, 0x70);			// 48dB gain
+	/* MFRC522_WriteRegister(MFRC522_REG_T_PRESCALER, 0x3E); */
+	/* MFRC522_WriteRegister(MFRC522_REG_T_RELOAD_L, 30); */
+	/* MFRC522_WriteRegister(MFRC522_REG_T_RELOAD_H, 0); */
+	MFRC522_WriteRegister(MFRC522_REG_T_PRESCALER, 0xA9);
+	MFRC522_WriteRegister(MFRC522_REG_T_RELOAD_L, 0xE8);           
+	MFRC522_WriteRegister(MFRC522_REG_T_RELOAD_H, 0x03);
+	//MFRC522_WriteRegister(MFRC522_REG_RF_CFG, 0x70);			// 48dB gain
 	MFRC522_WriteRegister(MFRC522_REG_TX_AUTO, 0x40);
 	MFRC522_WriteRegister(MFRC522_REG_MODE, 0x3D);
 	MFRC522_AntennaOn();										// Open the antenna
@@ -44,7 +44,7 @@ uint8_t MFRC522_Check(uint8_t * id) {
 	uint8_t status;
 	status = MFRC522_Request(PICC_REQIDL, id);					// Find cards, return card type
 	if (status == MI_OK) status = MFRC522_Anticoll(id);			// Card detected. Anti-collision, return card serial number 4 bytes
-	MFRC522_Halt();												// Command card into hibernation 
+	//MFRC522_Halt();												// Command card into hibernation
 	return status;
 }
 
