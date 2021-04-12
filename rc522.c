@@ -6,13 +6,11 @@ static const char *TAG = "RC522";
 
 void MFRC522_Init(void) {
 	ESP_LOGI(TAG, "Init spi");
-	
+
 	spi_config_t spi_config;
     // Load default interface parameters
     // CS_EN:1, MISO_EN:1, MOSI_EN:1, BYTE_TX_ORDER:1, BYTE_TX_ORDER:1, BIT_RX_ORDER:0, BIT_TX_ORDER:0, CPHA:0, CPOL:0
     spi_config.interface.val = SPI_DEFAULT_INTERFACE;
-	//spi_config.interface.byte_tx_order = 1;
-	//spi_config.interface.byte_rx_order = 1;
 
     // Load default interrupt enable
     // TRANS_DONE: true, WRITE_STATUS: false, READ_STATUS: false, WRITE_BUFFER: false, READ_BUFFER: false
@@ -24,19 +22,16 @@ void MFRC522_Init(void) {
     spi_config.clk_div = SPI_10MHz_DIV;
     spi_config.event_cb = NULL;
     spi_init(HSPI_HOST, &spi_config);
-	
+
 	//gpio_set_level(MFRC522_CS_PIN, 1);
-	
+
 	ESP_LOGI(TAG, "Init rc522");
 	MFRC522_Reset();
 	MFRC522_WriteRegister(MFRC522_REG_T_MODE, 0x80);
-	/* MFRC522_WriteRegister(MFRC522_REG_T_PRESCALER, 0x3E); */
-	/* MFRC522_WriteRegister(MFRC522_REG_T_RELOAD_L, 30);            */
-	/* MFRC522_WriteRegister(MFRC522_REG_T_RELOAD_H, 0); */
 	MFRC522_WriteRegister(MFRC522_REG_T_PRESCALER, 0xA9);
-	MFRC522_WriteRegister(MFRC522_REG_T_RELOAD_L, 0xE8);           
+	MFRC522_WriteRegister(MFRC522_REG_T_RELOAD_L, 0xE8);
 	MFRC522_WriteRegister(MFRC522_REG_T_RELOAD_H, 0x03);
-	//MFRC522_WriteRegister(MFRC522_REG_RF_CFG, 0x70);			// 48dB gain	
+	//MFRC522_WriteRegister(MFRC522_REG_RF_CFG, 0x70);			// 48dB gain
 	MFRC522_WriteRegister(MFRC522_REG_TX_AUTO, 0x40);
 	MFRC522_WriteRegister(MFRC522_REG_MODE, 0x3D);
 	MFRC522_AntennaOn();										// Open the antenna
@@ -48,7 +43,7 @@ uint8_t MFRC522_Check(uint8_t * id) {
 	uint8_t status;
 	status = MFRC522_Request(PICC_REQIDL, id);					// Find cards, return card type
 	if (status == MI_OK) status = MFRC522_Anticoll(id);			// Card detected. Anti-collision, return card serial number 4 bytes
-	MFRC522_Halt();												// Command card into hibernation 
+	MFRC522_Halt();												// Command card into hibernation
 	return status;
 }
 
@@ -63,7 +58,7 @@ uint8_t MFRC522_Compare(uint8_t * CardID, uint8_t * CompareID) {
 void MFRC522_WriteRegister(uint32_t addr, uint32_t val) {
 	addr = (addr << 1);
 	// Address format: 0XXXXXX0
-	
+
 	// Send address in cmd phase and data in mosi
 	spi_trans_t trans;
     memset(&trans, 0x0, sizeof(trans));
@@ -72,7 +67,7 @@ void MFRC522_WriteRegister(uint32_t addr, uint32_t val) {
 	trans.mosi = &val;
 	trans.cmd = &addr;
     spi_trans(HSPI_HOST, &trans);
-	
+
 	ESP_LOGD(TAG, "Writing %0x = %0x", addr >> 1, val);
 }
 
@@ -84,13 +79,13 @@ uint32_t MFRC522_ReadRegister(uint32_t o_addr) {
 	spi_trans_t trans;
     memset(&trans, 0x0, sizeof(trans));
 	trans.miso = &val;
-    trans.cmd = &addr; 
+    trans.cmd = &addr;
     trans.bits.miso = 8;
 	trans.bits.cmd = 8;
     spi_trans(HSPI_HOST, &trans);
-	
+
 	ESP_LOGD(TAG, "Reading %0x = %0x", o_addr, val);
-	
+
 	return val;
 }
 
@@ -100,7 +95,7 @@ void MFRC522_SetBitMask(uint8_t reg, uint8_t mask) {
 
 void MFRC522_ClearBitMask(uint8_t reg, uint8_t mask){
 	MFRC522_WriteRegister(reg, MFRC522_ReadRegister(reg) & (~mask));
-} 
+}
 
 void MFRC522_AntennaOn(void) {
 	uint8_t temp;
@@ -119,7 +114,7 @@ void MFRC522_Reset(void) {
 }
 
 uint8_t MFRC522_Request(uint8_t reqMode, uint8_t * TagType) {
-	uint8_t status;  
+	uint8_t status;
 	uint16_t backBits;																				// The received data bits
 
 	MFRC522_WriteRegister(MFRC522_REG_BIT_FRAMING, 0x07);											// TxLastBists = BitFramingReg[2..0]
@@ -162,7 +157,7 @@ uint8_t MFRC522_ToCard(uint8_t command, uint8_t * sendData, uint8_t sendLen, uin
 
 	// Execute the command
 	MFRC522_WriteRegister(MFRC522_REG_COMMAND, command);
-	if (command == PCD_TRANSCEIVE) MFRC522_SetBitMask(MFRC522_REG_BIT_FRAMING, 0x80);					// StartSend=1,transmission of data starts 
+	if (command == PCD_TRANSCEIVE) MFRC522_SetBitMask(MFRC522_REG_BIT_FRAMING, 0x80);					// StartSend=1,transmission of data starts
 
 	// Waiting to receive data to complete
 	i = 2000;	// i according to the clock frequency adjustment, the operator M1 card maximum waiting time 25ms
@@ -208,7 +203,7 @@ uint8_t MFRC522_Anticoll(uint8_t * serNum) {
 		if (serNumCheck != serNum[i]) status = MI_ERR;
 	}
 	return status;
-} 
+}
 
 void MFRC522_CalculateCRC(uint8_t *  pIndata, uint8_t len, uint8_t * pOutData) {
 	uint8_t i, n;
@@ -217,7 +212,7 @@ void MFRC522_CalculateCRC(uint8_t *  pIndata, uint8_t len, uint8_t * pOutData) {
 	MFRC522_SetBitMask(MFRC522_REG_FIFO_LEVEL, 0x80);													// Clear the FIFO pointer
 	// Write_MFRC522(CommandReg, PCD_IDLE);
 
-	// Writing data to the FIFO	
+	// Writing data to the FIFO
 	for (i = 0; i < len; i++) MFRC522_WriteRegister(MFRC522_REG_FIFO_DATA, *(pIndata+i));
 	MFRC522_WriteRegister(MFRC522_REG_COMMAND, PCD_CALCCRC);
 
@@ -238,7 +233,7 @@ uint8_t MFRC522_SelectTag(uint8_t * serNum) {
 	uint8_t status;
 	uint8_t size;
 	uint16_t recvBits;
-	uint8_t buffer[9]; 
+	uint8_t buffer[9];
 
 	buffer[0] = PICC_SElECTTAG;
 	buffer[1] = 0x70;
@@ -253,7 +248,7 @@ uint8_t MFRC522_Auth(uint8_t authMode, uint8_t BlockAddr, uint8_t * Sectorkey, u
 	uint8_t status;
 	uint16_t recvBits;
 	uint8_t i;
-	uint8_t buff[12]; 
+	uint8_t buff[12];
 
 	// Verify the command block address + sector + password + card serial number
 	buff[0] = authMode;
@@ -281,7 +276,7 @@ uint8_t MFRC522_Write(uint8_t blockAddr, uint8_t * writeData) {
 	uint8_t status;
 	uint16_t recvBits;
 	uint8_t i;
-	uint8_t buff[18]; 
+	uint8_t buff[18];
 
 	buff[0] = PICC_WRITE;
 	buff[1] = blockAddr;
@@ -300,7 +295,7 @@ uint8_t MFRC522_Write(uint8_t blockAddr, uint8_t * writeData) {
 
 void MFRC522_Halt(void) {
 	uint16_t unLen;
-	uint8_t buff[4]; 
+	uint8_t buff[4];
 
 	buff[0] = PICC_HALT;
 	buff[1] = 0;

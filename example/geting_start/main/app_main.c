@@ -15,15 +15,15 @@
 
 #include "rc522.h"
 
-static const char *TAG = "test_main";
+static const char *TAG = "rc522_example";
 
 uint8_t uid[MFRC522_MAX_LEN]; // Для хранения ID карт
 
-void main_test_task(void *pvParameter)
+void main_example_task(void *pvParameter)
 {
     // Инициализируем RC522
 	MFRC522_Init();
-	
+
 	// Считываем версия прошивки чипа и проверяем соединение
 	uint32_t ver = MFRC522_ReadRegister(MFRC522_REG_VERSION);
 	ESP_LOGI(TAG, "RC522 version: 0x%0x", ver);
@@ -35,22 +35,22 @@ void main_test_task(void *pvParameter)
 		case 0x12: ESP_LOGI(TAG, "counterfeit chip"); break;
 		default:   ESP_LOGI(TAG, "Chip not found"); vTaskDelete(NULL);
 	}
-	
-	// Ципл проверки карты и вывода ID, если карта считана
+
+	// Цикл проверки карты и вывода ID, если карта считана
 	uint8_t status;
 	while (1){
 		status = MFRC522_Check(&uid); // Проверяем карту
-		
+
 		if (status == MI_OK){
 			ESP_LOGI(TAG, "MF return: ");
 			for (uint8_t i = 0; uid[i]; i++)
 				printf ("0x%0x ", uid[i]); // Выводим считаный ID
 			printf("\n");
 		}
-		
+
 		vTaskDelay(100 / portTICK_RATE_MS);
 	}
-	
+
 	vTaskDelete(NULL);
 }
 
@@ -61,8 +61,8 @@ void app_main()
 	ESP_LOGI(TAG, "[APP] IDF version: %s", esp_get_idf_version());
 
 	/* MAIN CODE */
-	
-	vTaskDelay(100 / portTICK_RATE_MS);
-  
-	xTaskCreate(main_test_task, "test_task", configMINIMAL_STACK_SIZE * 4, NULL, 5, NULL);
+
+	vTaskDelay(100 / portTICK_RATE_MS); // Ожидаем RC522
+
+	xTaskCreate(main_example_task, "example_task", configMINIMAL_STACK_SIZE * 4, NULL, 5, NULL);
 }
